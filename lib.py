@@ -2,66 +2,62 @@ import pickle,os,re
 from bs4 import BeautifulSoup
 from config import *
 from subprocess import call
-from custom_ui import print_ui
 
 def clear():
     _ = call('clear' if os.name =='posix' else 'cls')
     return
 
-def login(session):
+def login(session,username,password):
+    status = 0
     if os.path.exists('User Info/cookies.bin'):
         with open('User Info/cookies.bin', 'rb') as file:
             cookies = pickle.load(file)
             session.cookies.update(cookies)
+        status = 1
     else:
-        login_data['username'] = input("Enter your username: ")
-        login_data['password'] = input("Enter your password: ")
-        
-        session.post(login_url, data = login_data)
-        with open('User Info/cookies.bin', 'wb') as file:
-            pickle.dump(session.cookies, file)
-        print('You are logged in.')
+        login_data['username'] = username #input("Enter your username: ")
+        login_data['password'] = password #input("Enter your password: ")
+
+        if username!="" or password!="":
+            session.post(login_url, data = login_data)
+            with open('User Info/cookies.bin', 'wb') as file:
+                pickle.dump(session.cookies, file)
     try:
         profile_page = session.get(url = profile_url, headers = dflix_headers)
         profile_soup = BeautifulSoup(profile_page.text, "html.parser")
         profile_info =  profile_soup.find('div', class_='col-lg-8')
         profile_info.find_all('p', class_='text-muted mb-0')
     except:
-        clear()
-        print_ui()
-        print('Login failed. Please try again.')
-        session = relogin(session)
-    return session
+        if status == 1:
+            logout(session)
+        else:
+            pass
+        status = -1
+        #session = relogin(session,username,password)
+        
+    return session,status
 
-def relogin(session):
+def relogin(session,username,password):
     logout(session)
-    session = login(session)
+    session = login(session,username,password)
     return session
 
 def logout(session):
     session.get(url = logout_url, headers = dflix_headers)
     if os.path.exists('User Info/cookies.bin'):
         os.remove('User Info/cookies.bin')
-    print("You are logged out.")
     return 0
 
 def get_profile_info(session):
+    user_data = []
     try:
         profile_page = session.get(url = profile_url, headers = dflix_headers)
         profile_soup = BeautifulSoup(profile_page.text, "html.parser")
         profile_info =  profile_soup.find('div', class_='col-lg-8')
         user_data = profile_info.find_all('p', class_='text-muted mb-0')
-        print(f'''
-            ==================================
-            ********[User information]********
-            ==================================
-            User Name  : {user_data[0].text}
-            User Email : {user_data[1].text}
-            User Phone : {user_data[2].text}
-        ''')
     except:
-        print('Profile info not found.')
-    return 0
+        user_data = -1
+    return user_data
 def search(session,search_type,search_term):
     #search data lies here
     search_data['term'] = search_term
@@ -78,11 +74,12 @@ def search(session,search_type,search_term):
         item_info = item.find('div', class_='searchdetails').text.replace('<br>','')
         item_list.append([
             {'count': count},
-                {
+            {
                 'item_name' : item_name,
                 'item_info' : item_info,
                 'item_url'  : item_url
-                }])
+            },
+            {'type': search_type}])
         count += 1
     return item_list
 

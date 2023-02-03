@@ -1,0 +1,4 @@
+__pycache__/
+.vscode/
+tkinter test/
+*.code-workspace
