@@ -4,12 +4,26 @@ import os
 from lib import *
 from time import sleep
 import requests
-
+#themes color code
+theme_color = {
+    "dark":"#222831",
+    "dark_light":"#393E46",
+    "white":"#FFFFFF",
+    "sky":"#00ADB5",
+    "link":"#FF2E63",
+    "cyan":"#08D9D6",
+    "red":"#E84545"
+}
+#
 with requests.Session() as session:
     session_main = session
     #this is the main session
 logged_in = False
 main_frame = None
+#secondary main frames
+main_frame1 = None
+main_frame2 = None
+#
 frame_about = None
 #for user login logout button and status
 auth_state = True
@@ -41,25 +55,25 @@ def authentication(status):
         username = StringVar()
         password = StringVar()
 
-        user_name_entry = Entry(auth_frame, textvariable=username, width=20)
-        user_name_label = Label(auth_frame, justify=LEFT, text="User Name : ", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
-        password_entry = Entry(auth_frame, textvariable=password, width=20, show="*")
-        password_label = Label(auth_frame, justify=LEFT, text="Password : ", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
+        user_name_entry = Entry(auth_frame, textvariable=username, width=35, relief=SOLID)
+        user_name_label = Label(auth_frame, justify=LEFT, text="User Name : ", bg="white", fg="black", font=("Arial", 12, "bold"), relief=SOLID, border=0)
+        password_entry = Entry(auth_frame, textvariable=password, width=35, show="*", relief=SOLID)
+        password_label = Label(auth_frame, justify=LEFT, text="Password  : ", bg="white", fg="black", font=("Arial", 12, "bold"), relief=SOLID, border=0)
         
-        user_name_label.grid(row=0, column=0, pady=10, sticky=W, padx=20)
-        user_name_entry.grid(row=0, column=1, pady=10, sticky=W, padx=10)
-        password_label.grid(row=1, column=0, pady=10, sticky=W, padx=20)
-        password_entry.grid(row=1, column=1, pady=10, sticky=W, padx=10)
+        user_name_label.grid(row=0, column=0, pady=10, sticky=W, padx=(15,0))
+        user_name_entry.grid(row=0, column=1, pady=10, sticky=W)
+        password_label.grid(row=1, column=0, pady=10, sticky=W, padx=(15,0))
+        password_entry.grid(row=1, column=1, pady=10, sticky=W)
         
         #has to confirm password and save as cookies
         #submit button
-        submit_frame = LabelFrame(auth_frame, bg="white", border=0, width=400)
+        submit_frame = LabelFrame(auth_frame, bg="white", border=1, width=400, relief=SOLID)
         submit_frame.grid(row=2, column=0, columnspan=2, pady=10, sticky=N, padx=120)
         submit_btn = Button(
             submit_frame, 
             text="SUBMIT", 
             width=20, height=2, bg="white", fg="black", 
-            font=("Arial", 10, "bold"), relief=RAISED, border=0,
+            font=("Arial", 10, "bold"), relief=SOLID, border=0,
             command=lambda: submit_btn_cm(username.get(), password.get(), auth))
         submit_btn.pack()
     else:
@@ -87,10 +101,10 @@ def user_confirmation(title :str, message :str, button :list, reply :StringVar):
     confirm.resizable(False,False)
     confirm.config(bg="white")
     #new frame
-    confirm_frame = LabelFrame(confirm, text=title, width=400, height=400, bg="white", border=1, labelanchor=N)
+    confirm_frame = LabelFrame(confirm, width=400, height=400, bg="white", border=1, labelanchor=N, relief=SOLID)
     confirm_frame.pack(fill="both", expand="yes", padx=10, pady=10)
     #variables
-    message_label = Label(confirm_frame, justify=LEFT, text=message, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
+    message_label = Label(confirm_frame, justify=LEFT, text=message, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
     message_label.pack(pady=10, padx=10)
     #submit button
     submit_frame = LabelFrame(confirm_frame, bg="white", border=0, width=400)
@@ -101,7 +115,7 @@ def user_confirmation(title :str, message :str, button :list, reply :StringVar):
             submit_frame, 
             text=options, 
             width=20, height=2, bg="white", fg="black", 
-            font=("Arial", 10, "bold"), relief=RAISED, border=0,
+            font=("Arial", 10, "bold"), relief=SOLID, border=1,
             command=lambda i=options: [reply.set(i),confirm.destroy()]))
         submit_btn[-1].pack(pady=10, padx=10)
     confirm.wait_window() #this is to make sure that the after window close the value of object is set.
@@ -119,19 +133,17 @@ def link_crawler_get(item_name,item_url,type):
     #getting the links as list
     result = link_crawler(session = session_main, select_url = item_url)
     
-    #idmtabber = Toplevel()
-    #idmtabber.title("Open In IDM")
-    #idmtabber.geometry("400x400")
-
-    #using info messagebox for now
-    #user_reply = messagebox.askquestion(title="Open In IDM", message="Do you want to open this in IDM?",button=["Yes","No","Save as text"])
     user_reply = StringVar()
     user_confirmation(title="Open In IDM", message="Do you want to open this in IDM?",button=["Yes","No","Save as text"], reply=user_reply)
+    
     if user_reply.get() == "Yes":
-        for i in result:
-            #open in idm or xdm
-            reply = os.system("idman /n /d " + i)
-            print(reply)
+        idm_dir = r"C:\Program Files (x86)\Internet Download Manager\IDMan.exe"
+        if os.path.exists(idm_dir):
+            for link_add in result:
+                link_add = link_add.replace("md5=","md5^=").replace("&expires=","^&expires^=")
+                os.system(f'''idm_exec.bat \"{link_add}\"''')
+        else:
+            messagebox.showinfo("Not found!", "IDM not installed, Please Install Internet Download Manager in your device.")
     elif user_reply.get() == "No":
         pass
     elif user_reply.get() == "Save as text":
@@ -212,44 +224,42 @@ def user_agreement_window(root):
     agreement_frame.pack(fill="both", expand="yes", padx=10, pady=10)
 
     #the agreement
-    rule_1 = Label(agreement_frame, text="1. The user is personally responsible to use this program.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, justify=LEFT)
+    rule_1 = Label(agreement_frame, text="1. The user is personally responsible to use this program.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
     rule_1.grid(row=0, column=0, columnspan=2, sticky=W)
-    rule_2 = Label(agreement_frame, text="2. This software has been created for learning purpose only.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
+    rule_2 = Label(agreement_frame, text="2. This software has been created for learning purpose only.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
     rule_2.grid(row=1, column=0, columnspan=2, sticky=W)
-    rule_3 = Label(agreement_frame, text="3. None of the files from the links are not stored by \n    the developer. This software just collects\n    the links from the server.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, justify=LEFT)
+    rule_3 = Label(agreement_frame, text="3. None of the files from the links are not stored by \n    the developer. This software just collects\n    the links from the server.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
     rule_3.grid(row=2, column=0, columnspan=2,pady=5, sticky=W)
-    rule_4 = Label(agreement_frame, text="4. This software is just a byproduct, learning tkinter for python.\n    Not for illigal use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, justify=LEFT)
+    rule_4 = Label(agreement_frame, text="4. This software is just a byproduct, learning tkinter for python.\n    Not for illigal use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
     rule_4.grid(row=3, column=0, columnspan=2, sticky=W)
-    rule_5 = Label(agreement_frame, text="5.This script is not for commercial use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
+    rule_5 = Label(agreement_frame, text="5.This script is not for commercial use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
     rule_5.grid(row=4, column=0, columnspan=2, sticky=W)
 
     #create a yes no with user agreement question
-    question = Label(agreement_frame, text="Do you agree to the user agreement?", bg="white", fg="black", font=("Arial", 14, "bold"), relief=RAISED, border=0)
+    question = Label(agreement_frame, text="Do you agree to the user agreement?", bg="white", fg="black", font=("Arial", 14, "bold"), relief=SOLID, border=0)
     question.grid(row=6, column=0, columnspan=2,pady=10, sticky=W)
     #yes no buttons
     yes_no_frame = LabelFrame(agreement_frame, bg="white", border=0, width=400)
     yes_no_frame.grid(row=7, column=0, pady=10, sticky=N)
-    yes_btn = Button(yes_no_frame, text="YES", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: user_agreement(agreement,status="yes"))
+    yes_btn = Button(yes_no_frame, text="YES", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, command=lambda: user_agreement(agreement,status="yes"))
     yes_btn.grid(row=0, column=0, pady=10, padx=10, sticky=N)
-    no_btn = Button(yes_no_frame, text="NO", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: user_agreement(agreement,status="no"))
+    no_btn = Button(yes_no_frame, text="NO", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, command=lambda: user_agreement(agreement,status="no"))
     no_btn.grid(row=0, column=1, pady=10, padx=10, sticky=N)
 
 
 def user_profile():
-    global session_main,main_frame
+    global session_main,main_frame1,theme_color
     profile_info = ["Not Found!", "Not Found", "00000000000"]#this is sample this has to be removed and connected to the main program
     sessioned_profile_info = get_profile_info(session_main)
     if sessioned_profile_info != -1:
         profile_info = [sessioned_profile_info[0].text, sessioned_profile_info[1].text, sessioned_profile_info[2].text]
-    bg_color = "white"
     #frame
     global frame_about
     frame_about = LabelFrame(
-        main_frame, 
-        text="User Profile", 
+        main_frame1,
         width=500, 
         height=500, 
-        bg=bg_color, 
+        #bg=theme_color["dark_light"], 
         border=0, 
         labelanchor=N)
     frame_about.grid(row=0, column=0, sticky=N)
@@ -257,23 +267,27 @@ def user_profile():
     user_profile_info = f'''    ==============================   
                     [USER PROFILE]
     ============================== 
-      
+
     User Name  : {profile_info[0]}
     User Email  : {profile_info[1]}
     User Phone : {profile_info[2]}
-    ''' + (f"Please Login First!" if sessioned_profile_info == -1 else "")
+    ==============================
+
+    ''' + (f"PLEASE LOGIN FIRST!" 
+           if sessioned_profile_info == -1 
+           else "")
     #variables
     user_inf = Label(
         frame_about, 
-        bg=bg_color, 
+        bg=theme_color["dark_light"],
+        fg=theme_color["white"], 
         text=user_profile_info, 
         font=("Arial", 10, "bold"),
-        relief=SUNKEN,
+        relief=SOLID,
         anchor=W, 
         border=0,
         justify=LEFT,
-        padx=10,
-        pady=10)
+        padx=10)
     user_inf.grid(sticky=W)
 def clear_data():
     #clear all the files in this directory
@@ -286,21 +300,19 @@ def clear_data():
         messagebox.showinfo("Clear Data", "All the generated links has been cleared!")
 
 def user_options():
-    global main_frame
-    bg_color = "white"
+    global main_frame1,theme_color
     pady = 2
 
     global frame_option
     frame_option = LabelFrame(
-    main_frame,
-    text="Options", 
+    main_frame1, 
     width=500, 
     height=500, 
-    bg=bg_color, 
+    bg=theme_color["dark_light"], 
     border=0, 
     labelanchor=N,
-    padx=50)
-    frame_option.grid(row=0, column=1, sticky=W,ipady=pady)
+    padx=35)
+    frame_option.grid(row=0, column=1, sticky=E,ipady=pady)
     
     global auth_state
     auth_text = "LOGIN" if auth_state else "LOGOUT"
@@ -310,16 +322,31 @@ def user_options():
         text=auth_text, 
         width=20, 
         height=2, 
-        bg="white", 
-        fg="black", 
-        font=("Arial", 10, "bold"), 
-        relief=RAISED, border=0, command=lambda: authentication(auth_state))
+        bg=theme_color["sky"], 
+        fg=theme_color["dark"], 
+        font=("Arial", 12, "bold"), 
+        relief=SOLID, border=0, command=lambda: authentication(auth_state))
     login_logout.grid(row=0, column=0, sticky=W, pady=pady)
     
-    clear_all = Button(frame_option, text="CLEAR ALL", width=20, height=2, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: clear_data())
+    clear_all = Button(
+        frame_option, 
+        text="CLEAR ALL", 
+        width=20, 
+        height=2, 
+        bg=theme_color["sky"], 
+        fg=theme_color["dark"], 
+        font=("Arial", 12, "bold"), 
+        relief=SOLID, border=0, command=lambda: clear_data())
     clear_all.grid(row=1, column=0, sticky=W, pady=pady)
     
-    exit_program = Button(frame_option, text="EXIT", width=20, height=2, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0,command=exit)
+    exit_program = Button(
+        frame_option, 
+        text="EXIT", 
+        width=20, height=2, 
+        bg=theme_color["sky"], 
+        fg=theme_color["dark"],  
+        font=("Arial", 12, "bold"), 
+        relief=SOLID, border=0,command=exit)
     exit_program.grid(row=2, column=0, sticky=W, pady=pady)
 
 def np_btn_cm(np_state):
@@ -359,12 +386,10 @@ def search_result_box(current_item):
         item_count=current_item+count
         if item_count >= len(items):
             label = Label(search_result_frame, text=f'''\n\n''', font=("Arial", 10, "bold"), bg=bg_color, justify=LEFT,width=50, anchor=W,wraplength=320)
-            button = Button(search_result_frame, text="         ", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
-            label.grid(row=count, column=0, sticky=W, pady=pady)
-            button.grid(row=count, column=2, sticky=E, pady=pady)
+            button = Button(search_result_frame, text="         ", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
         else:
-            label = Label(search_result_frame, text=f'''{items[item_count][0]['count']}\n{items[item_count][1]['item_name']}\n''' + [x for x in f'''{items[item_count][1]['item_info']}'''.split('/')][0], font=("Arial", 10, "bold"), bg=bg_color, justify=LEFT,width=50, anchor=W,wraplength=320)
-            button = Button(search_result_frame, text="GET LINKS", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda temp=item_count: link_crawler_get(items[temp][1]['item_name'],items[temp][1]['item_url'],items[temp][2]['type']))
+            label = Label(search_result_frame, text=f'''{items[item_count][0]['count']}\n{items[item_count][1]['item_name']}\n''' + [x for x in f'''{items[item_count][1]['item_info']}'''.split('/')][0], font=("Arial", 10, "bold"), bg=theme_color["dark_light"], fg=theme_color["cyan"], justify=LEFT,width=50, anchor=W,wraplength=320)
+            button = Button(search_result_frame, text="GET LINKS", width=10, height=1, bg=theme_color["dark"], fg=theme_color["link"], font=("Arial", 10, "bold"), relief=SOLID, border=1, command=lambda temp=item_count: link_crawler_get(items[temp][1]['item_name'],items[temp][1]['item_url'],items[temp][2]['type']))
             label.grid(row=count, column=0, sticky=W, pady=pady)
             button.grid(row=count, column=2, sticky=E, pady=pady)
         item_show_list[count-1][0] = label
@@ -376,11 +401,10 @@ def search_frame():
     pady = 5
 
     frame_search = LabelFrame(
-    main_frame,
-    text="Search", 
+    main_frame, 
     width=540, 
     height=330, 
-    bg=bg_color, 
+    bg=theme_color["dark_light"], 
     border=0, 
     labelanchor=N,
     padx=10,
@@ -389,48 +413,48 @@ def search_frame():
 
     #create a search bar
     search_q = StringVar()
-    search_bar = Entry(frame_search,textvariable=search_q, width=52, border=0, font=("Arial", 10, "bold"))
+    search_bar = Entry(frame_search,textvariable=search_q, width=55, border=2, font=("Arial", 10, "bold"), relief=SOLID)
     search_bar.grid(row=0, column=0, sticky=W)
     
     #option series of movies
-    op_frame = LabelFrame(frame_search, bg=bg_color, border=0, width=100)
+    op_frame = LabelFrame(frame_search, bg=theme_color["dark_light"], border=0, width=100)
     op_frame.grid(row=1, column=0, columnspan=2, sticky=W, pady=pady)
     
     options = StringVar()
     
-    option1 = Radiobutton(op_frame, text="Series", variable=options, value="series", bg=bg_color, font=("Arial", 10, "bold"))
-    option2 = Radiobutton(op_frame, text="Movies", variable=options, value="movies", bg=bg_color, font=("Arial", 10, "bold"))
+    option1 = Radiobutton(op_frame, text="Series", variable=options, value="series", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
+    option2 = Radiobutton(op_frame, text="Movies", variable=options, value="movies", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
     option1.grid(row=0, column=0, sticky=W, ipadx=pady, ipady=pady, padx=pady)
     option2.grid(row=0, column=1, sticky=W, ipadx=pady, ipady=pady)
+    #option1.deselect()
+    option1.select()
 
     #create a search button
-    search_button = Button(frame_search, text="SEARCH", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: search_result(search_q.get(),options.get()))
-    search_button.grid(row=0, column=1, sticky=W)
+    search_button = Button(frame_search, text="SEARCH", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=1, command=lambda: search_result(search_q.get(),options.get()))
+    search_button.grid(row=0, column=1, sticky=E, padx=0)
 
     #create next and previous button
-    next_button = Button(op_frame, text="NEXT", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: np_btn_cm('next'))
-    next_button.grid(row=0, column=2, pady=pady, padx=(90,10))
-    prev_button = Button(op_frame, text="PREVIOUS", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0, command=lambda: np_btn_cm('previous'))
-    prev_button.grid(row=0, column=3, pady=pady, padx=pady)
+    next_button = Button(op_frame, text="NEXT", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=GROOVE, border=1, command=lambda: np_btn_cm('next'))
+    next_button.grid(row=0, column=2, pady=pady, padx=(150,5))
+    prev_button = Button(op_frame, text="PREVIOUS", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=GROOVE, border=1, command=lambda: np_btn_cm('previous'))
+    prev_button.grid(row=0, column=3, pady=pady, padx=(pady,5))
 
     #create a search result frame
     global search_result_frame
     search_result_frame = LabelFrame(
     frame_search,
     width=540,
-    height=230,
-    bg=bg_color,
+    bg=theme_color["dark_light"],
     border=1,
     labelanchor=N,
+    relief=SOLID,
     padx=10)
     search_result_frame.grid(row=2, column=0, columnspan=2, sticky=W)
     
     global item_show_list
     for count in range(4): ##this is going to be a fixed list
-        label = Label(search_result_frame, text=f''' \n\n''', font=("Arial", 10, "bold"), bg=bg_color, justify=LEFT,width=50, anchor=W,wraplength=320)
-        button = Button(search_result_frame, text="         ", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=RAISED, border=0)
-        label.grid(row=count, column=0, sticky=W, pady=pady)
-        button.grid(row=count, column=2, sticky=E, pady=pady)
+        label = Label(search_result_frame, text=f''' \n\n''', font=("Arial", 10, "bold"), bg=theme_color["white"], justify=LEFT,width=50, anchor=W,wraplength=320)
+        button = Button(search_result_frame, text="         ", width=10, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
         item_show_list.append([label,button])
 
 
@@ -443,25 +467,36 @@ def main_init():
 
 def main():
     #starting the session and login
+    global theme_color
     main_init()
 
     #main window
     root = Tk()
     root.title("DFLIX LINK GENERATOR")
-    root.geometry("600x650")
+    width = 600
+    height = 650
+    scr_width = root.winfo_screenwidth()
+    scr_height = root.winfo_screenheight()
+    x = int((scr_width/2) - (width/2))
+    y = int((scr_height/2) - (height/2))
+    root.geometry(f'''{width}x{height}+{x}+{y-30}''')
     root.resizable(False,False)
     #user agreement is must
     #
     user_agreement(root,status="begin")
     #
-    bg_color = "white"
     #title section
-    main_title = Label(root,bg=bg_color, text="DFLIX LINK GENERATOR", font=("Arial", 20, "bold"))
+    main_title = Label(root,bg=theme_color["dark"], text="DFLIX LINK GENERATOR", font=("Arial", 20, "bold"),fg=theme_color["white"])
     main_title.pack(fill="both")
     #global
-    global main_frame
-    main_frame = LabelFrame(root, width=550, height=550, bg="white", border=0, padx=20, pady=10)
+    global main_frame,main_frame1,main_frame2
+    main_frame = LabelFrame(root, width=550, height=550, bg=theme_color["dark_light"], border=0, padx=20, pady=10)
     main_frame.pack(fill="both", expand="yes")
+    #secondary main frames
+    main_frame1 = LabelFrame(main_frame, width=550, height=300, bg=theme_color["dark_light"], border=0, pady=10)
+    main_frame1.grid(row=0, column=0, sticky=W)
+    main_frame2 = LabelFrame(main_frame, width=550, height=300, bg=theme_color["dark_light"], border=0, pady=10)
+    main_frame2.grid(row=1, column=0, sticky=W)
     
     #user info section
     user_profile()
@@ -469,7 +504,6 @@ def main():
     user_options()
     #search section
     search_frame()
-
 
     root.mainloop()
 if __name__ == '__main__':
