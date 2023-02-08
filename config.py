@@ -8,6 +8,7 @@ profile_url  = primary_url + '/profile'
 logout_url   = primary_url + '/login/destroy'
 search_url   = primary_url + '/search'
 cds2_url     = 'http://cds2.discoveryftp.net'
+cds1_url     = 'http://cds1.discoveryftp.net'
 #the login data is here
 login_data = {
     'username': 'HERE IS THE USERNAME',#CHNAGE THIS WITH YOUR USERNAME
@@ -21,7 +22,7 @@ login_data = {
 
 #the index headers is here
 dflix_headers = {
-    "user-agent": "DflixLinkGen_Desktom/0.1 (X11; Linux x86_64)"
+    "user-agent": "DflixLinkGen_Desktop/0.1 (X11; Linux x86_64)"
     }
 
 #the search data is here

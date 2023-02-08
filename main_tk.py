@@ -14,6 +14,8 @@ theme_color = {
     "cyan":"#08D9D6",
     "red":"#E84545"
 }
+#root main window
+root = None
 #
 with requests.Session() as session:
     session_main = session
@@ -99,22 +101,22 @@ def user_confirmation(title :str, message :str, button :list, reply :StringVar):
     confirm.title(title)
     confirm.geometry("400x400")
     confirm.resizable(False,False)
-    confirm.config(bg="white")
+    confirm.config(bg=theme_color["dark"])
     #new frame
-    confirm_frame = LabelFrame(confirm, width=400, height=400, bg="white", border=1, labelanchor=N, relief=SOLID)
+    confirm_frame = LabelFrame(confirm, width=400, height=400, bg=theme_color["dark"], border=1, labelanchor=N, relief=SOLID)
     confirm_frame.pack(fill="both", expand="yes", padx=10, pady=10)
     #variables
-    message_label = Label(confirm_frame, justify=LEFT, text=message, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
+    message_label = Label(confirm_frame, justify=LEFT, text=message, bg=theme_color["dark"], fg=theme_color["sky"], font=("Arial", 10, "bold"), relief=SOLID, border=0)
     message_label.pack(pady=10, padx=10)
     #submit button
-    submit_frame = LabelFrame(confirm_frame, bg="white", border=0, width=400)
+    submit_frame = LabelFrame(confirm_frame, bg=theme_color["dark"], border=0, width=400)
     submit_frame.pack(pady=10, padx=10)
     submit_btn = []
     for options in button:
         submit_btn.append(Button(
             submit_frame, 
             text=options, 
-            width=20, height=2, bg="white", fg="black", 
+            width=20, height=2, bg=theme_color["dark_light"], fg="red", 
             font=("Arial", 10, "bold"), relief=SOLID, border=1,
             command=lambda i=options: [reply.set(i),confirm.destroy()]))
         submit_btn[-1].pack(pady=10, padx=10)
@@ -122,7 +124,7 @@ def user_confirmation(title :str, message :str, button :list, reply :StringVar):
     #this is made specially dry method -Tanvir Zaman
 
 def link_crawler_get(item_name,item_url,type):
-    global session_main
+    global session_main,main_frame
     #setting the url
     if type=="series":
         item_url+="/" #this is to make sure that the url is correct
@@ -131,7 +133,7 @@ def link_crawler_get(item_name,item_url,type):
         movie_player_soup = BeautifulSoup(movie_player.text, "html.parser")
         item_url = movie_player_soup.find_all('td')[2].find('a')['href'] + "/"
     #getting the links as list
-    result = link_crawler(session = session_main, select_url = item_url)
+    result = link_crawler(session = session_main, select_url = item_url,crawl_type=type)
     
     user_reply = StringVar()
     user_confirmation(title="Open In IDM", message="Do you want to open this in IDM?",button=["Yes","No","Save as text"], reply=user_reply)
@@ -187,65 +189,6 @@ def submit_btn_cm(username, password,auth):
         '''
     else:
         messagebox.showinfo("Login", "Please fill all the fields.")
-
-def user_agreement(frame,status :str):
-    if status=="begin":
-        if os.path.exists("user_agreement.txt"):
-            with open("user_agreement.txt", "r") as f:
-                if f.read() == "yes":
-                    f.close()
-                    return
-                else:
-                    f.close()
-                    os.remove("user_agreement.txt")
-                    frame.destroy()
-                    user_agreement_window(frame)
-        else:
-            user_agreement_window(frame)
-    elif status=="yes":
-        with open("user_agreement.txt", "w") as f:
-            f.write("yes")
-            f.close()
-            frame.destroy()
-    elif status=="no":
-        frame.destroy()
-        messagebox.showinfo("User Agreement", "You have to agree to the user agreement to use this software.")
-        exit()
-
-def user_agreement_window(root):
-    agreement = Toplevel(root)
-    agreement.title("User Agreement")
-    agreement.geometry("400x400")
-    #agreement.iconbitmap("tkinter test/img/ico.ico")
-    agreement.resizable(False,False)
-    agreement.config(bg="white")
-    #new frame
-    agreement_frame = LabelFrame(agreement, width=400, height=400, bg="white", border=0)
-    agreement_frame.pack(fill="both", expand="yes", padx=10, pady=10)
-
-    #the agreement
-    rule_1 = Label(agreement_frame, text="1. The user is personally responsible to use this program.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
-    rule_1.grid(row=0, column=0, columnspan=2, sticky=W)
-    rule_2 = Label(agreement_frame, text="2. This software has been created for learning purpose only.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
-    rule_2.grid(row=1, column=0, columnspan=2, sticky=W)
-    rule_3 = Label(agreement_frame, text="3. None of the files from the links are not stored by \n    the developer. This software just collects\n    the links from the server.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
-    rule_3.grid(row=2, column=0, columnspan=2,pady=5, sticky=W)
-    rule_4 = Label(agreement_frame, text="4. This software is just a byproduct, learning tkinter for python.\n    Not for illigal use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, justify=LEFT)
-    rule_4.grid(row=3, column=0, columnspan=2, sticky=W)
-    rule_5 = Label(agreement_frame, text="5.This script is not for commercial use.", bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0)
-    rule_5.grid(row=4, column=0, columnspan=2, sticky=W)
-
-    #create a yes no with user agreement question
-    question = Label(agreement_frame, text="Do you agree to the user agreement?", bg="white", fg="black", font=("Arial", 14, "bold"), relief=SOLID, border=0)
-    question.grid(row=6, column=0, columnspan=2,pady=10, sticky=W)
-    #yes no buttons
-    yes_no_frame = LabelFrame(agreement_frame, bg="white", border=0, width=400)
-    yes_no_frame.grid(row=7, column=0, pady=10, sticky=N)
-    yes_btn = Button(yes_no_frame, text="YES", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, command=lambda: user_agreement(agreement,status="yes"))
-    yes_btn.grid(row=0, column=0, pady=10, padx=10, sticky=N)
-    no_btn = Button(yes_no_frame, text="NO", width=20, height=1, bg="white", fg="black", font=("Arial", 10, "bold"), relief=SOLID, border=0, command=lambda: user_agreement(agreement,status="no"))
-    no_btn.grid(row=0, column=1, pady=10, padx=10, sticky=N)
-
 
 def user_profile():
     global session_main,main_frame1,theme_color
@@ -338,7 +281,7 @@ def user_options():
         font=("Arial", 12, "bold"), 
         relief=SOLID, border=0, command=lambda: clear_data())
     clear_all.grid(row=1, column=0, sticky=W, pady=pady)
-    
+    global root
     exit_program = Button(
         frame_option, 
         text="EXIT", 
@@ -346,7 +289,7 @@ def user_options():
         bg=theme_color["sky"], 
         fg=theme_color["dark"],  
         font=("Arial", 12, "bold"), 
-        relief=SOLID, border=0,command=exit)
+        relief=SOLID, border=0,command=lambda: root.destroy())
     exit_program.grid(row=2, column=0, sticky=W, pady=pady)
 
 def np_btn_cm(np_state):
@@ -396,16 +339,16 @@ def search_result_box(current_item):
         item_show_list[count-1][1] = button
 
 def search_frame():
-    global main_frame
+    global main_frame2
     bg_color = "white"
     pady = 5
 
     frame_search = LabelFrame(
-    main_frame, 
+    main_frame2, 
     width=540, 
     height=330, 
     bg=theme_color["dark_light"], 
-    border=0, 
+    border=1, 
     labelanchor=N,
     padx=10,
     pady=10)
@@ -443,7 +386,6 @@ def search_frame():
     global search_result_frame
     search_result_frame = LabelFrame(
     frame_search,
-    width=540,
     bg=theme_color["dark_light"],
     border=1,
     labelanchor=N,
@@ -467,7 +409,7 @@ def main_init():
 
 def main():
     #starting the session and login
-    global theme_color
+    global root,theme_color
     main_init()
 
     #main window
@@ -480,10 +422,10 @@ def main():
     x = int((scr_width/2) - (width/2))
     y = int((scr_height/2) - (height/2))
     root.geometry(f'''{width}x{height}+{x}+{y-30}''')
+    root.overrideredirect(True)
     root.resizable(False,False)
     #user agreement is must
     #
-    user_agreement(root,status="begin")
     #
     #title section
     main_title = Label(root,bg=theme_color["dark"], text="DFLIX LINK GENERATOR", font=("Arial", 20, "bold"),fg=theme_color["white"])
@@ -494,9 +436,9 @@ def main():
     main_frame.pack(fill="both", expand="yes")
     #secondary main frames
     main_frame1 = LabelFrame(main_frame, width=550, height=300, bg=theme_color["dark_light"], border=0, pady=10)
-    main_frame1.grid(row=0, column=0, sticky=W)
-    main_frame2 = LabelFrame(main_frame, width=550, height=300, bg=theme_color["dark_light"], border=0, pady=10)
-    main_frame2.grid(row=1, column=0, sticky=W)
+    main_frame1.grid(row=0, column=0)
+    main_frame2 = LabelFrame(main_frame, width=550, height=300, bg=theme_color["dark_light"], border=1, pady=10)
+    main_frame2.grid(row=1, column=0)
     
     #user info section
     user_profile()
@@ -506,5 +448,4 @@ def main():
     search_frame()
 
     root.mainloop()
-if __name__ == '__main__':
-    main()
+main()

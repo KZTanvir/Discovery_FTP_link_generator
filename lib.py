@@ -2,11 +2,23 @@ import pickle,os,re
 from bs4 import BeautifulSoup
 from config import *
 from subprocess import call
+#from chat gpt but improved by me
+import os
+import subprocess
 
-def clear():
-    _ = call('clear' if os.name =='posix' else 'cls')
-    return
-
+def send_link_to_idm(url):
+    x_32 = os.path.exists(r"C:\Program Files\Internet Download Manager")
+    x_64 = os.path.exists(r"C:\Program Files (x86)\Internet Download Manager")
+    if x_32 or x_64:
+        cmd = "IDMan.exe /d {}".format(url)
+        if x_32:
+            idm_path = r"C:\Program Files\Internet Download Manager"
+        else:
+            idm_path = r"C:\Program Files (x86)\Internet Download Manager"
+        subprocess.run(["cmd.exe", "/c", "cd", idm_path, "&&", cmd], creationflags=subprocess.CREATE_NO_WINDOW)
+    else:
+        print("Please install Internet Download Manager")
+#
 def login(session,username,password):
     status = 0
     if os.path.exists('User Info/cookies.bin'):
@@ -83,18 +95,22 @@ def search(session,search_type,search_term):
         count += 1
     return item_list
 
-def link_crawler(session,select_url):
+def link_crawler(session,select_url,crawl_type):
+    if crawl_type=="series":
+        target_url = cds2_url
+    elif crawl_type=="movies":
+        target_url = cds1_url
     crawler = []
     crawler_soup = BeautifulSoup(session.get(url = select_url,headers = dflix_headers).text, 'html.parser')
     crawler_data = crawler_soup.find_all('td', attrs= {'data-href':True})
     for contents in crawler_data:
         if contents['data-href'].startswith('/') and contents['data-href'].endswith('/'):
-            crawler = crawler + link_crawler(session, cds2_url + contents['data-href'])
+            crawler = crawler + link_crawler(session, target_url + contents['data-href'],crawl_type)
         elif re.search('expires',contents['data-href']):
             ## THIS IS FOR SAVING LINKS IN A TEXT FILE
             #with open('test.txt','a+') as file:
                 #file.write(cds2_url + contents['data-href'] + '\n')
                 #file.close()
             ## THIS BLOCK ENDS HERE
-            crawler.append(cds2_url + contents['data-href'])
+            crawler.append(target_url + contents['data-href'])
     return crawler
