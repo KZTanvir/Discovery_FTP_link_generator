@@ -142,8 +142,7 @@ def link_crawler_get(item_name,item_url,type):
         idm_dir = r"C:\Program Files (x86)\Internet Download Manager\IDMan.exe"
         if os.path.exists(idm_dir):
             for link_add in result:
-                link_add = link_add.replace("md5=","md5^=").replace("&expires=","^&expires^=")
-                os.system(f'''idm_exec.bat \"{link_add}\"''')
+                idm_downloader(link_add)
         else:
             messagebox.showinfo("Not found!", "IDM not installed, Please Install Internet Download Manager in your device.")
     elif user_reply.get() == "No":
@@ -422,7 +421,7 @@ def main():
     x = int((scr_width/2) - (width/2))
     y = int((scr_height/2) - (height/2))
     root.geometry(f'''{width}x{height}+{x}+{y-30}''')
-    root.overrideredirect(True)
+    #root.overrideredirect(True)
     root.resizable(False,False)
     #user agreement is must
     #

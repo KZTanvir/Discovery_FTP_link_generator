@@ -6,16 +6,17 @@ from subprocess import call
 import os
 import subprocess
 
-def send_link_to_idm(url):
+def idm_downloader(url):
     x_32 = os.path.exists(r"C:\Program Files\Internet Download Manager")
     x_64 = os.path.exists(r"C:\Program Files (x86)\Internet Download Manager")
     if x_32 or x_64:
-        cmd = "IDMan.exe /d {}".format(url)
+        url = url.replace("md5=","md5^=").replace("&expires=","^&expires^=")
+        cmd = "IDMan.exe /n /a /d " + url
         if x_32:
             idm_path = r"C:\Program Files\Internet Download Manager"
         else:
             idm_path = r"C:\Program Files (x86)\Internet Download Manager"
-        subprocess.run(["cmd.exe", "/c", "cd", idm_path, "&&", cmd], creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess.run(["cmd.exe", "/c", cmd], creationflags=subprocess.CREATE_NO_WINDOW,cwd=idm_path)
     else:
         print("Please install Internet Download Manager")
 #
