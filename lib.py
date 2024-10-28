@@ -39,7 +39,7 @@ def login(session,username,password):
         profile_page = session.get(url = profile_url, headers = dflix_headers)
         profile_soup = BeautifulSoup(profile_page.text, "html.parser")
         profile_info =  profile_soup.find('div', class_='col-lg-8')
-        profile_info.find_all('p', class_='text-muted mb-0')
+        profile_info.find_all('p', class_='text-white mb-0')
     except:
         if status == 1:
             logout(session)
@@ -67,7 +67,7 @@ def get_profile_info(session):
         profile_page = session.get(url = profile_url, headers = dflix_headers)
         profile_soup = BeautifulSoup(profile_page.text, "html.parser")
         profile_info =  profile_soup.find('div', class_='col-lg-8')
-        user_data = profile_info.find_all('p', class_='text-muted mb-0')
+        user_data = profile_info.find_all('p', class_='text-white mb-0')[1:]
     except:
         user_data = -1
     return user_data

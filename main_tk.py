@@ -364,8 +364,8 @@ def search_frame():
     
     options = StringVar()
     
-    option1 = Radiobutton(op_frame, text="Series", variable=options, value="series", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
-    option2 = Radiobutton(op_frame, text="Movies", variable=options, value="movies", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
+    option1 = Radiobutton(op_frame, text="Series", variable=options, value="s", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
+    option2 = Radiobutton(op_frame, text="Movies", variable=options, value="m", bg=theme_color["dark_light"], fg=theme_color["link"], font=("Arial", 10, "bold"))
     option1.grid(row=0, column=0, sticky=W, ipadx=pady, ipady=pady, padx=pady)
     option2.grid(row=0, column=1, sticky=W, ipadx=pady, ipady=pady)
     #option1.deselect()

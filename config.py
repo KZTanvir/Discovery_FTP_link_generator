@@ -1,7 +1,7 @@
 #the config lies here
 
 #the url of the dflix site is here
-primary_url  = 'http://dflix.discoveryftp.net'
+primary_url  = 'https://dflix.discoveryftp.net'
 login_url    = primary_url + '/login/auth'
 index_url    = primary_url + '/m'
 profile_url  = primary_url + '/profile'
@@ -11,10 +11,10 @@ cds2_url     = 'http://cds2.discoveryftp.net'
 cds1_url     = 'http://cds1.discoveryftp.net'
 #the login data is here
 login_data = {
-    'username': 'HERE IS THE USERNAME',#CHNAGE THIS WITH YOUR USERNAME
-    'password': 'HERE IS THE PASSWORD',#CHNAGE THIS WITH YOUR PASSWORD
+    'username': 'your username',#CHNAGE THIS WITH YOUR USERNAME
+    'password': 'your password',#CHNAGE THIS WITH YOUR PASSWORD
     'remember': 'on',#DO NOT CHANGE THIS
-    'loginsubmit': 'submit'#DO NOT CHANGE THIS
+    'loginsubmit': ''#DO NOT CHANGE THIS
 }
 
 #WARNING: DO NOT CHANGE THIS CONFIGURATION
@@ -22,7 +22,7 @@ login_data = {
 
 #the index headers is here
 dflix_headers = {
-    "user-agent": "DflixLinkGen_Desktop/0.1 (X11; Linux x86_64)"
+    "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
     }
 
 #the search data is here
