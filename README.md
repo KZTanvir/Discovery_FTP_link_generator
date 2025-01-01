@@ -1,3 +1,5 @@
+# This project is for educational purprose only and is no longer supported.
+# The developer will not be responsibe for misuse of this project.
 # Discovery_FTP_link_generator
 A script that generates download links,can search, and etc.(In progress)
 >> Work in progress
